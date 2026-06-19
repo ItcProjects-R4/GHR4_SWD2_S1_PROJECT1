@@ -6,6 +6,8 @@ The project focuses on frontend development using modern React practices with fa
 
 ---
 
+Website video tutorial: https://drive.google.com/file/d/1DA0ZYz1VIjd1vn0PAGi09J6fxasrujPV/view?usp=sharing
+
 ## 🚀 Features
 
 - Search for restaurants by location or keyword  
