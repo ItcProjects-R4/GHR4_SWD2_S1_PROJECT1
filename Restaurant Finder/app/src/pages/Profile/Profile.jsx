@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { useAuth } from "@/context/AuthContext";
+import { clearSavedRestaurants, getSavedRestaurants } from "@/data/restaurants";
 import {
   User,
   Mail,
@@ -224,14 +225,14 @@ export default function Profile() {
     ) {
       return;
     }
-    localStorage.removeItem("savedRestaurants");
+    clearSavedRestaurants(user);
     deleteAccount();
     window.location.href = "/login";
   };
 
   const savedCount = (() => {
-    const saved = localStorage.getItem("savedRestaurants");
-    return saved ? JSON.parse(saved).length : 0;
+    const saved = getSavedRestaurants(user);
+    return saved.length;
   })();
 
   const menuItems = [
@@ -272,7 +273,7 @@ export default function Profile() {
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg">
                   <Calendar className="w-4 h-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-600">
-                    Joined 2024
+                    Joined 2026
                   </span>
                 </div>
               </div>

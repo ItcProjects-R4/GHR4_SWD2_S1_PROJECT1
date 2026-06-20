@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -9,6 +9,7 @@ import {
   updateManagedRestaurant,
   addManagedRestaurant,
   getManagedRestaurants,
+  getFallbackMenuItems,
 } from "@/data/restaurants";
 import Loader from "@/components/Loader/Loader";
 import {
@@ -18,7 +19,6 @@ import {
   Clock,
   Heart,
   ArrowLeft,
-  DollarSign,
   Check,
   UtensilsCrossed,
   Car,
@@ -27,6 +27,7 @@ import {
   Music,
   Wifi,
   AlertCircle,
+  ExternalLink,
 } from "lucide-react";
 
 const featureIcons = {
@@ -64,12 +65,33 @@ export default function RestaurantDetail() {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [savedIds, setSavedIds] = useState(getSavedIds);
-  const [activeTab, setActiveTab] = useState("menu");
+  const [savedIds, setSavedIds] = useState(() => getSavedIds(user));
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(null);
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
+  const [showPhotosModal, setShowPhotosModal] = useState(false);
+
+  const menuItems = useMemo(() => {
+    if (!restaurant) return [];
+    if (Array.isArray(restaurant.menu) && restaurant.menu.length > 0) {
+      return restaurant.menu;
+    }
+
+    const fallback = getFallbackMenuItems(restaurant.cuisine, restaurant.cuisineName);
+    const seed = restaurant.id || "default";
+    const hash = Array.from(seed).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const copy = [...fallback];
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+      const j = (hash + i) % (i + 1);
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, 6);
+  }, [restaurant]);
+
+  useEffect(() => {
+    setSavedIds(getSavedIds(user));
+  }, [user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,15 +120,15 @@ export default function RestaurantDetail() {
 
   const toggleSave = () => {
     if (!restaurant) return;
-    const newIds = toggleSavedRestaurant(restaurant);
+    const newIds = toggleSavedRestaurant(restaurant, user);
     setSavedIds(newIds);
   };
 
   const handleBeginEdit = () => {
     setEditData({
       ...restaurant,
-      features: restaurant.features.join(", "),
-      menu: restaurant.menu.join(", "),
+      features: restaurant.features?.join(", ") ?? "",
+      menu: restaurant.menu?.join(", ") ?? "",
       rating: restaurant.rating?.toString() ?? "4.5",
       reviews: restaurant.reviews?.toString() ?? "120",
       priceLevel: restaurant.priceLevel?.toString() ?? "2",
@@ -167,501 +189,448 @@ export default function RestaurantDetail() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="w-8 h-8 text-red-500" />
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-gray-50 flex items-center justify-center px-4 py-16">
+        <div className="max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-red-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <AlertCircle className="w-10 h-10 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Restaurant not found</h2>
+          <p className="text-gray-600 mb-6 leading-relaxed">{error}</p>
+          <button
+            onClick={() => navigate("/explore")}
+            className="w-full px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white font-semibold rounded-full hover:shadow-xl transition-all duration-300"
+          >
+            ← Back to Explore
+          </button>
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Restaurant not found
-        </h2>
-        <p className="text-sm text-gray-500 mb-4">{error}</p>
-        <button
-          onClick={() => navigate("/explore")}
-          className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
-        >
-          Back to Explore
-        </button>
       </div>
     );
   }
 
   if (!restaurant) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Restaurant not found
-        </h2>
-        <button
-          onClick={() => navigate("/explore")}
-          className="text-orange-600 hover:text-orange-700 font-medium"
-        >
-          Back to Explore
-        </button>
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-gray-50 flex items-center justify-center px-4 py-16">
+        <div className="max-w-md w-full text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Restaurant not found</h2>
+          <button
+            onClick={() => navigate("/explore")}
+            className="text-orange-600 hover:text-orange-700 font-semibold text-lg"
+          >
+            ← Back to Explore
+          </button>
+        </div>
       </div>
     );
   }
 
   const isSaved = savedIds.includes(restaurant.id);
 
+  const reviewItems = restaurant.reviewsList && restaurant.reviewsList.length
+    ? restaurant.reviewsList
+    : [
+        {
+          id: "fake-1",
+          user: { name: "Mina S." },
+          rating: 5,
+          time_created: "June 2026",
+          text: "Amazing experience. The staff were attentive and the food felt like a special occasion. Highly recommend visiting for a memorable meal.",
+        },
+        {
+          id: "fake-2",
+          user: { name: "Leila A." },
+          rating: 4,
+          time_created: "May 2026",
+          text: "Great atmosphere and very tasty dishes. We enjoyed the service and the dessert was the perfect finish to our dinner.",
+        },
+        {
+          id: "fake-3",
+          user: { name: "Omar K." },
+          rating: 5,
+          time_created: "April 2026",
+          text: "One of the best places in town. The flavors were balanced, and the team made the whole evening feel special.",
+        },
+      ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Image */}
-      <div className="relative h-64 sm:h-80 lg:h-96">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-gray-50">
+      <div className="relative overflow-hidden">
         <img
           src={restaurant.image}
           alt={restaurant.name}
-          className="w-full h-full object-cover"
+          className="w-full h-[420px] object-cover brightness-90"
         />
-        <div className="absolute inset-0 bg-black/30" />
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 p-2.5 bg-white/90 backdrop-blur-sm rounded-xl text-gray-700 hover:bg-white transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <button
-          onClick={toggleSave}
-          className={`absolute top-4 right-4 p-2.5 rounded-xl backdrop-blur-sm transition-colors ${
-            isSaved
-              ? "bg-red-500 text-white"
-              : "bg-white/90 text-gray-700 hover:bg-white"
-          }`}
-        >
-          <Heart className={`w-5 h-5 ${isSaved ? "fill-current" : ""}`} />
-        </button>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/10" />
       </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-16 relative z-10 pb-12">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          {/* Header */}
-          <div className="p-6 sm:p-8 border-b border-gray-100">
-            <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-lg">
-                    {restaurant.cuisineName}
-                  </span>
-                  <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg">
-                    {restaurant.priceRange}
-                  </span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                  {restaurant.name}
-                </h1>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 rounded-lg">
-                <Star className="w-4 h-4 text-green-600 fill-green-600" />
-                <span className="text-sm font-semibold text-green-700">
-                  {restaurant.rating}
+      <div className="max-w-5xl mx-auto -mt-20 px-4 sm:px-6 lg:px-8 relative z-20">
+        <div className="rounded-[2rem] border border-white/20 bg-white/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <span className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-orange-700 font-semibold">
+                  {restaurant.cuisineName}
                 </span>
-                <span className="text-xs text-green-600">
-                  ({restaurant.reviews.toLocaleString()})
+                <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-gray-700 font-medium">
+                  {restaurant.priceRange}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-green-700 font-medium">
+                  <Star className="w-4 h-4 text-green-600" /> {restaurant.rating}
                 </span>
               </div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">{restaurant.name}</h1>
+              <p className="max-w-3xl text-gray-600 leading-relaxed">{restaurant.description}</p>
             </div>
 
-            <p className="text-gray-600 leading-relaxed mb-4">
-              {restaurant.description}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                {restaurant.location}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Phone className="w-4 h-4 text-gray-400" />
-                {restaurant.phone}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-gray-400" />
-                {restaurant.hours}
-              </div>
-            </div>
-            {user?.role === "admin" && (
-              <div className="mt-6 rounded-3xl border border-orange-100 bg-orange-50 p-5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-orange-700">
-                      Admin edit mode
-                    </p>
-                    <p className="text-sm text-orange-700/80">
-                      You can update the restaurant details here and save
-                      changes.
-                    </p>
-                  </div>
-                  {!isEditing ? (
-                    <button
-                      type="button"
-                      onClick={handleBeginEdit}
-                      className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-full hover:bg-orange-700 transition-colors"
-                    >
-                      Edit Restaurant
-                    </button>
-                  ) : (
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={handleSaveEdit}
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-full hover:bg-orange-700 transition-colors"
-                      >
-                        Save Changes
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCancelEdit}
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
-                {isEditing && editData && (
-                  <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Name
-                      </label>
-                      <input
-                        value={editData.name}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            name: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Location
-                      </label>
-                      <input
-                        value={editData.location}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            location: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Phone
-                      </label>
-                      <input
-                        value={editData.phone}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            phone: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Image URL
-                      </label>
-                      <input
-                        value={editData.image}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            image: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Rating
-                      </label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="5"
-                        value={editData.rating}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            rating: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Reviews
-                      </label>
-                      <input
-                        type="number"
-                        value={editData.reviews}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            reviews: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Price Range
-                      </label>
-                      <input
-                        value={editData.priceRange}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            priceRange: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Price Level
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="4"
-                        value={editData.priceLevel}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            priceLevel: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div className="lg:col-span-2">
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Description
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={editData.description}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            description: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div className="lg:col-span-2">
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Hours
-                      </label>
-                      <input
-                        value={editData.hours}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            hours: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                      />
-                    </div>
-                    <div className="lg:col-span-2">
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Features
-                      </label>
-                      <input
-                        value={editData.features}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            features: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                        placeholder="Comma separated list"
-                      />
-                    </div>
-                    <div className="lg:col-span-2">
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">
-                        Menu Items
-                      </label>
-                      <input
-                        value={editData.menu}
-                        onChange={(e) =>
-                          setEditData((prev) => ({
-                            ...prev,
-                            menu: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                        placeholder="Comma separated list"
-                      />
-                    </div>
-                  </div>
-                )}
-                {adminError && (
-                  <p className="mt-3 text-sm text-red-600">{adminError}</p>
-                )}
-                {adminMessage && (
-                  <p className="mt-3 text-sm text-green-600">{adminMessage}</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Features */}
-          <div className="p-6 sm:p-8 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Features & Amenities
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {restaurant.features.map((feature) => {
-                const IconComp = featureIcons[feature] || Check;
-                return (
-                  <div
-                    key={feature}
-                    className="flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 rounded-lg"
-                  >
-                    <IconComp className="w-4 h-4 text-orange-500" />
-                    <span className="text-sm text-gray-700">{feature}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="border-b border-gray-100">
-            <div className="flex px-6 sm:px-8">
+            <div className="flex flex-wrap items-center gap-3 justify-start lg:justify-end">
               <button
-                onClick={() => setActiveTab("menu")}
-                className={`px-4 py-3.5 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === "menu"
-                    ? "border-orange-500 text-orange-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
+                onClick={() => navigate(-1)}
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:-translate-y-0.5 transition-all"
               >
-                Popular Dishes
+                <ArrowLeft className="w-4 h-4" /> Back
               </button>
               <button
-                onClick={() => setActiveTab("reviews")}
-                className={`px-4 py-3.5 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === "reviews"
-                    ? "border-orange-500 text-orange-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                onClick={toggleSave}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all ${
+                  isSaved ? "bg-red-600 text-white" : "bg-white text-slate-800 border border-gray-200 hover:bg-orange-50"
                 }`}
               >
-                Reviews
+                <Heart className="w-4 h-4" /> {isSaved ? "Saved" : "Save"}
               </button>
             </div>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-6 sm:p-8">
-            {activeTab === "menu" ? (
-              <div className="space-y-3">
-                {restaurant.menu.map((item, index) => (
-                  <div
-                    key={item}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-semibold text-sm">
-                        {index + 1}
-                      </div>
-                      <span className="font-medium text-gray-800">{item}</span>
-                    </div>
-                    <div className="flex items-center text-orange-500">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      <DollarSign
-                        className={`w-3.5 h-3.5 ${
-                          restaurant.priceLevel < 2 ? "text-gray-300" : ""
-                        }`}
-                      />
-                      <DollarSign
-                        className={`w-3.5 h-3.5 ${
-                          restaurant.priceLevel < 3 ? "text-gray-300" : ""
-                        }`}
-                      />
-                      <DollarSign
-                        className={`w-3.5 h-3.5 ${
-                          restaurant.priceLevel < 4 ? "text-gray-300" : ""
-                        }`}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {[
-                  {
-                    name: "Sarah M.",
-                    rating: 5,
-                    date: "2 weeks ago",
-                    text: "Absolutely amazing experience! The food was exceptional and the service was top-notch. Will definitely be coming back.",
-                  },
-                  {
-                    name: "James K.",
-                    rating: 4,
-                    date: "1 month ago",
-                    text: "Great ambiance and delicious food. The wait was a bit long but worth it. Recommended for special occasions.",
-                  },
-                  {
-                    name: "Emily R.",
-                    rating: 5,
-                    date: "2 months ago",
-                    text: "One of the best dining experiences in the city. Every dish was perfectly prepared. A must-visit!",
-                  },
-                ].map((review, i) => (
-                  <div key={i} className="p-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-sm font-semibold">
-                          {review.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {review.name}
-                          </p>
-                          <p className="text-xs text-gray-400">{review.date}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-0.5">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <Star
-                            key={j}
-                            className={`w-3.5 h-3.5 ${
-                              j < review.rating
-                                ? "text-yellow-400 fill-yellow-400"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600">{review.text}</p>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16">
+        <div className="grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="space-y-8">
+            <section className="rounded-[2rem] border border-white/70 bg-white/95 shadow-2xl p-6 sm:p-8">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 auto-rows-fr">
+                <div className="rounded-3xl bg-orange-50 p-5 h-full flex flex-col justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.25em] text-orange-700 font-semibold mb-2">Rating</p>
+                    <div className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+                      <Star className="w-5 h-5 text-orange-500" /> {restaurant.rating}
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-500">{Number(restaurant.reviews || 0).toLocaleString()} reviews</p>
+                </div>
+                <div className="rounded-3xl bg-slate-950 p-5 h-full flex flex-col justify-between text-white">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.25em] text-slate-300 font-semibold mb-2">Status</p>
+                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${restaurant.isClosed ? "bg-red-600/15 text-red-700" : "bg-emerald-500/15 text-emerald-700"}`}>
+                      {restaurant.isClosed ? "Closed" : "Open now"}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm text-slate-300 leading-6">{restaurant.hours}</p>
+                </div>
+                <div className="rounded-3xl bg-slate-50 p-5 h-full flex flex-col justify-between">
+                  <p className="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold mb-2">Location</p>
+                  <p className="text-sm text-slate-700">{restaurant.location}</p>
+                </div>
+                <div className="rounded-3xl bg-slate-50 p-5 h-full flex flex-col justify-between">
+                  <p className="text-xs uppercase tracking-[0.25em] text-slate-500 font-semibold mb-2">Phone</p>
+                  <p className="text-sm text-slate-700">{restaurant.phone}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <a
+                  href={`tel:${restaurant.phone.replace(/[^0-9+]/g, "")}`}
+                  className="inline-flex items-center justify-center gap-2 rounded-3xl border border-orange-200 bg-orange-50 px-5 py-3 text-sm font-semibold text-orange-700 hover:bg-orange-100 transition-all"
+                >
+                  <Phone className="w-4 h-4" /> Call
+                </a>
+                {restaurant.yelpUrl && (
+                  <a
+                    href={restaurant.yelpUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-3xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-all"
+                  >
+                    <ExternalLink className="w-4 h-4" /> View on Yelp
+                  </a>
+                )}
+                {restaurant.coordinates && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${restaurant.coordinates.latitude},${restaurant.coordinates.longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-3xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:border-slate-300 transition-all"
+                  >
+                    <MapPin className="w-4 h-4" /> Directions
+                  </a>
+                )}
+              </div>
+            </section>
+
+            {restaurant.photos?.length > 0 && (
+              <section className="rounded-[2rem] border border-white/70 bg-white/95 shadow-2xl p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-6 gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-orange-700">Photo Gallery</p>
+                    <h2 className="text-2xl font-bold text-slate-900">A look inside</h2>
+                  </div>
+                  <button
+                    onClick={() => setShowPhotosModal(true)}
+                    className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 transition-all"
+                  >
+                    View all photos
+                  </button>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {(restaurant.photos?.slice(0, 3) || []).map((photo, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setShowPhotosModal(true)}
+                      className="group overflow-hidden rounded-[1.5rem] bg-slate-100 shadow-sm"
+                    >
+                      <img
+                        src={photo}
+                        alt={`${restaurant.name} photo ${index + 1}`}
+                        className="h-60 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section className="rounded-[2rem] border border-white/70 bg-white/95 shadow-2xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-orange-100 rounded-xl">
+                  <UtensilsCrossed className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-orange-700">Menu Highlights</p>
+                  <h2 className="text-2xl font-bold text-slate-900">What to try</h2>
+                </div>
+              </div>
+              {menuItems.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {menuItems.slice(0, 6).map((item, index) => (
+                    <div key={index} className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+                      <p className="font-semibold text-slate-900">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+                  <p className="font-semibold text-slate-800 mb-2">Menu details not available</p>
+                  <p>The current restaurant detail data does not include meal items from the API.</p>
+                </div>
+              )}
+            </section>
+
+            <section className="rounded-[2rem] border border-white/70 bg-white/95 shadow-2xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-yellow-100 rounded-xl">
+                  <Star className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-500">Guest Reviews</p>
+                  <h2 className="text-2xl font-bold text-slate-900">Loved by diners</h2>
+                </div>
+              </div>
+              <div className="space-y-5">
+                {reviewItems.map((review) => (
+                  <article key={review.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white font-semibold shadow-md">
+                          {review.user?.name?.charAt(0) || "G"}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-900">{review.user?.name || "Guest"}</p>
+                          <p className="text-sm text-slate-500">{review.time_created}</p>
+                        </div>
+                      </div>
+                      <div className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
+                        <Star className="w-4 h-4 text-yellow-500" /> {review.rating}
+                      </div>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">{review.text}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <aside className="space-y-8">
+            <section className="rounded-[2rem] border border-white/70 bg-white/95 shadow-2xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="p-2.5 bg-orange-100 rounded-xl">
+                  <Check className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-orange-700">Top features</p>
+                  <h2 className="text-xl font-bold text-slate-900">Highlights</h2>
+                </div>
+              </div>
+              <div className="grid gap-3">
+                {(restaurant.features || []).slice(0, 8).map((feature) => {
+                  const IconComp = featureIcons[feature] || Check;
+                  return (
+                    <div key={feature} className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <IconComp className="w-5 h-5 text-orange-600" />
+                      <span className="text-sm font-medium text-slate-700">{feature}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {restaurant.coordinates && (
+              <section className="rounded-[2rem] border border-white/70 bg-white/95 shadow-2xl p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2.5 bg-slate-100 rounded-xl">
+                    <MapPin className="w-5 h-5 text-slate-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-500">Address</p>
+                    <h2 className="text-xl font-bold text-slate-900">Find us</h2>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed mb-4">{restaurant.location}</p>
+                <div className="rounded-3xl overflow-hidden border border-slate-200">
+                  <iframe
+                    title="restaurant-map"
+                    src={`https://www.google.com/maps?q=${restaurant.coordinates.latitude},${restaurant.coordinates.longitude}&z=15&output=embed`}
+                    className="w-full h-52 border-0"
+                  />
+                </div>
+              </section>
+            )}
+
+            {user?.role === "admin" && (
+              <section className="rounded-[2rem] border border-orange-200 bg-gradient-to-br from-orange-50 to-white p-6 shadow-2xl">
+                <div className="flex items-center justify-between gap-4 mb-5">
+                  <div>
+                    <p className="text-sm font-semibold text-orange-700">Admin</p>
+                    <h2 className="text-xl font-bold text-slate-900">Edit details</h2>
+                  </div>
+                  <button
+                    onClick={!isEditing ? handleBeginEdit : handleCancelEdit}
+                    className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-all"
+                  >
+                    {isEditing ? "Cancel" : "Edit"}
+                  </button>
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed">Update the restaurant information, images, or menu from this panel.</p>
+                {isEditing && editData && (
+                  <div className="mt-5 space-y-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="block">
+                        <span className="text-xs font-semibold text-slate-600">Name</span>
+                        <input
+                          value={editData.name}
+                          onChange={(e) => setEditData((prev) => ({ ...prev, name: e.target.value }))}
+                          className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-semibold text-slate-600">Location</span>
+                        <input
+                          value={editData.location}
+                          onChange={(e) => setEditData((prev) => ({ ...prev, location: e.target.value }))}
+                          className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                        />
+                      </label>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="block">
+                        <span className="text-xs font-semibold text-slate-600">Phone</span>
+                        <input
+                          value={editData.phone}
+                          onChange={(e) => setEditData((prev) => ({ ...prev, phone: e.target.value }))}
+                          className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-semibold text-slate-600">Image URL</span>
+                        <input
+                          value={editData.image}
+                          onChange={(e) => setEditData((prev) => ({ ...prev, image: e.target.value }))}
+                          className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                        />
+                      </label>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="block">
+                        <span className="text-xs font-semibold text-slate-600">Rating</span>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="5"
+                          value={editData.rating}
+                          onChange={(e) => setEditData((prev) => ({ ...prev, rating: e.target.value }))}
+                          className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-semibold text-slate-600">Reviews</span>
+                        <input
+                          type="number"
+                          value={editData.reviews}
+                          onChange={(e) => setEditData((prev) => ({ ...prev, reviews: e.target.value }))}
+                          className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                        />
+                      </label>
+                    </div>
+                    <label className="block">
+                      <span className="text-xs font-semibold text-slate-600">Description</span>
+                      <textarea
+                        rows={3}
+                        value={editData.description}
+                        onChange={(e) => setEditData((prev) => ({ ...prev, description: e.target.value }))}
+                        className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                      />
+                    </label>
+                    <button
+                      onClick={handleSaveEdit}
+                      className="w-full rounded-3xl bg-orange-600 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-700 transition-all"
+                    >
+                      Save changes
+                    </button>
+                    {adminError && <p className="text-sm text-red-600">{adminError}</p>}
+                    {adminMessage && <p className="text-sm text-green-600">{adminMessage}</p>}
+                  </div>
+                )}
+              </section>
+            )}
+          </aside>
+        </div>
+      </div>
+
+      {showPhotosModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="max-w-6xl w-full overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+            <div className="flex items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 p-5">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">Photos — {restaurant.name}</h3>
+                <p className="text-sm text-slate-500">Browse the full collection of restaurant images.</p>
+              </div>
+              <button
+                onClick={() => setShowPhotosModal(false)}
+                className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-all"
+              >
+                Close
+              </button>
+            </div>
+            <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+              {(restaurant.photos || []).map((photo, index) => (
+                <img
+                  key={index}
+                  src={photo}
+                  alt={`${restaurant.name} photo ${index + 1}`}
+                  className="h-72 w-full rounded-[1.5rem] object-cover transition-transform duration-500 hover:scale-105"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router";
 import Hero from "@/components/Hero/Hero";
 import CategoryFilter from "@/components/CategoryFilter/CategoryFilter";
@@ -8,13 +8,14 @@ import {
   categories,
   fetchRestaurants,
   getSavedIds,
-  toggleSavedRestaurant,
   getSavedRestaurants,
   getViewHistory,
   getPopularRestaurants,
   getRecommendedRestaurants,
+  toggleSavedRestaurant,
 } from "@/data/restaurants";
 import { useAuth } from "@/context/AuthContext";
+import SmartAssistant from "@/components/SmartAssistant/SmartAssistant";
 import {
   ArrowRight,
   TrendingUp,
@@ -23,13 +24,22 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+const SMART_ASSISTANT_SEEN_KEY = "smartAssistantSeen";
+const SMART_ASSISTANT_ANSWERS_KEY = "smartAssistantAnswers";
+
+function getAssistantStorageKey(email) {
+  return email ? `${SMART_ASSISTANT_ANSWERS_KEY}_${email}` : SMART_ASSISTANT_ANSWERS_KEY;
+}
+
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const [activeCategory, setActiveCategory] = useState("all");
   const [restaurantsData, setRestaurantsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [savedIds, setSavedIds] = useState(getSavedIds);
+  const [savedIds, setSavedIds] = useState(() => getSavedIds(user));
+  const [showAssistantModal, setShowAssistantModal] = useState(false);
+  const [assistantAnswers, setAssistantAnswers] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,25 +72,105 @@ export default function Home() {
     };
   }, [activeCategory]);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (loading) return;
+
+    const assistantSeenKey = user?.email
+      ? `${SMART_ASSISTANT_SEEN_KEY}_${user.email}`
+      : SMART_ASSISTANT_SEEN_KEY;
+
+    const seen = localStorage.getItem(assistantSeenKey);
+    if (seen !== "true") {
+      setShowAssistantModal(true);
+    }
+  }, [isAuthenticated, loading, user?.email]);
+
+  useEffect(() => {
+    const key = getAssistantStorageKey(user?.email);
+    const savedAnswers = localStorage.getItem(key);
+    if (savedAnswers) {
+      try {
+        setAssistantAnswers(JSON.parse(savedAnswers));
+      } catch {
+        setAssistantAnswers(null);
+      }
+    } else {
+      setAssistantAnswers(null);
+    }
+  }, [user?.email]);
+
+  const closeAssistantModal = () => {
+    const assistantSeenKey = user?.email
+      ? `${SMART_ASSISTANT_SEEN_KEY}_${user.email}`
+      : SMART_ASSISTANT_SEEN_KEY;
+
+    localStorage.setItem(assistantSeenKey, "true");
+    setShowAssistantModal(false);
+  };
+
+  const handleSaveAssistantAnswers = useCallback(
+    (answers) => {
+      const key = getAssistantStorageKey(user?.email);
+      try {
+        localStorage.setItem(key, JSON.stringify(answers));
+        setAssistantAnswers(answers);
+      } catch {
+        // ignore storage failures
+      }
+    },
+    [user?.email],
+  );
+
+  useEffect(() => {
+    setSavedIds(getSavedIds(user));
+  }, [user]);
+
   const toggleSave = (id) => {
     const restaurant = restaurantsData.find((r) => r.id === id);
     if (!restaurant) return;
-    const newIds = toggleSavedRestaurant(restaurant);
+    const newIds = toggleSavedRestaurant(restaurant, user);
     setSavedIds(newIds);
   };
+
+  const normalize = (v) => String(v || "").trim().toLowerCase();
 
   const filteredRestaurants =
     activeCategory === "all"
       ? restaurantsData
-      : restaurantsData.filter((r) => r.cuisine === activeCategory);
+      : restaurantsData.filter((r) => {
+            if (!r) return false;
+            const rawCuisine = String(r.cuisine || "").trim().toLowerCase();
+            const rawCuisineName = String(r.cuisineName || "").trim().toLowerCase();
+            const cuisine = rawCuisine && rawCuisine !== "all" ? rawCuisine : rawCuisineName;
+            const active = normalize(activeCategory);
+
+            // Match by main cuisine fields
+            if (cuisine === active) return true;
+
+            // Match by cuisineName fallback
+            if (rawCuisineName === active) return true;
+
+            // Match by categories array (alias or title)
+            if (Array.isArray(r.categories) && r.categories.length) {
+              for (const c of r.categories) {
+                const alias = String(c?.alias || "").trim().toLowerCase();
+                const title = String(c?.title || "").trim().toLowerCase();
+                if (alias === active || title === active) return true;
+              }
+            }
+
+            return false;
+          });
 
   const popularRestaurants = getPopularRestaurants(filteredRestaurants, 4);
   const recommendedRestaurants = getRecommendedRestaurants(
     filteredRestaurants,
     {
       history: getViewHistory(),
-      saved: getSavedRestaurants(),
+      saved: getSavedRestaurants(user),
       user,
+      assistantAnswers,
       count: 4,
       excludeIds: popularRestaurants.map((restaurant) => restaurant.id),
     },
@@ -91,6 +181,14 @@ export default function Home() {
   return (
     <div>
       <Hero />
+
+      <button
+        type="button"
+        onClick={() => setShowAssistantModal(true)}
+        className="fixed bottom-6 right-6 z-50 rounded-full bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-2xl shadow-orange-500/20 transition hover:bg-orange-700"
+      >
+        Try AI test now
+      </button>
 
       {/* Categories Section */}
       <section className="py-10 bg-gray-50">
@@ -115,6 +213,20 @@ export default function Home() {
         </div>
       </section>
 
+      {showAssistantModal && (
+        <SmartAssistant
+          restaurants={restaurantsData}
+          activeCategory={activeCategory}
+          user={user}
+          savedRestaurants={getSavedRestaurants(user)}
+          viewHistory={getViewHistory()}
+          open={showAssistantModal}
+          initialAnswers={assistantAnswers}
+          onSaveAnswers={handleSaveAssistantAnswers}
+          onClose={closeAssistantModal}
+        />
+      )}
+
       {/* Featured Restaurants */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -124,7 +236,7 @@ export default function Home() {
                 Popular Restaurants
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                Top-rated dining spots loved by our community
+                Most-reviewed dining spots within this cuisine category
               </p>
             </div>
             <Link

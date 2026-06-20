@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/context/AuthContext";
 import {
   UtensilsCrossed,
@@ -14,6 +14,8 @@ import {
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state || {};
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -108,6 +110,11 @@ export default function Register() {
           <p className="text-sm text-gray-500">
             Start discovering amazing restaurants
           </p>
+          {state.message && (
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-orange-50 border border-orange-200 text-orange-700 text-sm">
+              <span>{state.message}</span>
+            </div>
+          )}
         </div>
 
         {/* Form */}

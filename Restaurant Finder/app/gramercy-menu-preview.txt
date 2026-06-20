@@ -1,0 +1,120 @@
+﻿
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+	
+	
+		<!DOCTYPE html>
+<html class="no-js" lang="en-US">
+    <head>
+      
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>The Tavern Menu | Gramercy Tavern in New York City</title>
+	<!-- Powered by BentoBox http://getbento.com -->
+	<!--
+	___ ___ _  _ _____ ___  ___  _____  __
+	| _ ) __| \| |_   _/ _ \| _ )/ _ \ \/ /
+	| _ \ _|| .` | | || (_) | _ \ (_) >  <
+	|___/___|_|\_| |_| \___/|___/\___/_/\_\
+
+	-->
+		<meta name="keywords" content="Michael Anthony,Danny Meyer,Union Square Hospitality Group, restaurants in gramercy,new york restaurants,Private room, Private dining,private dining room,private dining nyc,restaurants in new york,happy hour gramercy, highest rated restaurants in nyc,restaurants in ny ny,best restaurants new york city,restaurants near gramercy park,good new york restaurants,danny meyer's restaurants nyc,fanciest restaurants in nyc,best lunch spots nyc,lunch nyc,grammercy,new york best restaurants, best nyc lunch">
+		<meta name="description" content="The Tavern serves an a la carte menu of rustic fare from the open, wood-burning grill in a casual, walk-in setting for lunch and dinner.">
+		<link rel="icon" href="https://media-cdn.getbento.com/accounts/c96fa153fcd99197529b15a71ab913e4/media/images/51671GT_Favicon.png">
+	<link rel="canonical" href="https://www.gramercytavern.com/tavern-menu/">
+	<meta name="Revisit-After" content="5 Days">
+	<meta name="Distribution" content="Global">
+	<meta name="Rating" content="General">
+		<meta property="og:site_name" content="Gramercy Tavern">
+		<meta property="og:title" content="The Tavern Menu | Gramercy Tavern in New York City">
+		<meta property="og:type" content="article">
+		<meta property="og:url" content="https://www.gramercytavern.com/tavern-menu/">
+			<meta property="og:description" content="The Tavern serves an a la carte menu of rustic fare from the open, wood-burning grill in a casual, walk-in setting for lunch and dinner.">
+			<meta property="og:image" content="https://images.getbento.com/accounts/c96fa153fcd99197529b15a71ab913e4/media/images/474802023-09-12_FSP4258-Gramercy-Tavern-JPEG_2500px_Q80_1.jpg?w=1200&fit=crop&auto=compress,format&cs=origin&h=600">
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="The Tavern Menu | Gramercy Tavern in New York City">
+			<meta name="twitter:description" content="The Tavern serves an a la carte menu of rustic fare from the open, wood-burning grill in a casual, walk-in setting for lunch and dinner.">
+			<meta name="twitter:site" content="@GramercyTavern">
+			<meta name="twitter:creator" content="@GramercyTavern">
+			<meta name="twitter:image" content="https://images.getbento.com/accounts/c96fa153fcd99197529b15a71ab913e4/media/images/474802023-09-12_FSP4258-Gramercy-Tavern-JPEG_2500px_Q80_1.jpg?w=1200&fit=crop&auto=compress,format&cs=origin&h=600">
+
+	<link rel="preconnect" href="https://widgets.resy.com" crossorigin>
+	<link rel="preconnect" href="https://theme-assets.getbento.com" async crossorigin>
+	<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+	<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+	
+		<link rel="preload" as="image" href="https://images.getbento.com/accounts/c96fa153fcd99197529b15a71ab913e4/media/rovJwIcvSOdILWyd08nQ_blackstickylogo000A0F.png" fetchpriority="high" /> 
+	
+
+	
+	
+
+	
+	
+	
+	
+	<script src="https://wsv3cdn.audioeye.com/bootstrap.js?h=a9194a7f943557409afb77721430045e" async></script>
+	
+	<script type="text/javascript" src="https://theme-assets.getbento.com/sensei/9969e7a.sensei/assets/js/head.min.js"></script>
+	<script type="text/javascript">
+			WebFont.load({custom: { families: ["Gramercy Gothic"] }  , google: { families: ["EB+Garamond:400,500,600,700,800&display=swap"] }});
+		</script>
+			<noscript>
+			    <style type="text/css">
+			    	<link href="https://fonts.googleapis.com/css?family=EB+Garamond:400,500,600,700,800&display=swap&display=swap" rel="stylesheet" type="text/css">
+			    </style>
+			</noscript>
+	
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="//assets-cdn-refresh.getbento.com/stylesheet/gramercytavern-redesign-copy/2/scss/main.c5e6e11f892b4a2a5286d92e0a726559.scss" />
+	<script type="text/javascript">
+	    Modernizr.addTest("maybemobile", function(){ return (Modernizr.touchevents && Modernizr.mq("only screen and (max-width: 768px)")) ? true : false; });
+	</script>
+
+  
+  
+
+  
+  
+  <script>
+	  !function(f,b,e,v,n,t,s)
+	  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+	  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+	  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+	  n.queue=[];t=b.createElement(e);t.async=!0;
+	  t.src=v;s=b.getElementsByTagName(e)[0];
+	  s.parentNode.insertBefore(t,s)}(window, document,'script',
+	  'https://connect.facebook.net/en_US/fbevents.js');
+	  fbq('init', '276907072927542');
+	  fbq('track', 'PageView');
+	</script>
+	<noscript>
+		<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=276907072927542&ev=PageView&noscript=1"/>
+	</noscript>
+	

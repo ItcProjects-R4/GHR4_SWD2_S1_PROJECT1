@@ -74,6 +74,17 @@
   }
 }
 
+@keyframes saved-flip {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -82,4 +93,83 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .navbar-fade-bottom {
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 80%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 85%,
+      rgba(0, 0, 0, 1) 80%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+
+  .animate-saved-flip {
+    animation: saved-flip 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes dropdown-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes menu-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-dropdown-enter {
+    animation: dropdown-enter 180ms ease-out;
+  }
+
+  .animate-menu-enter {
+    animation: menu-enter 220ms ease-out;
+  }
+}
+
+@keyframes dropdown-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+@keyframes menu-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+.animate-dropdown-exit {
+  animation: dropdown-exit 140ms ease-in forwards;
+}
+
+.animate-menu-exit {
+  animation: menu-exit 180ms ease-in forwards;
 }

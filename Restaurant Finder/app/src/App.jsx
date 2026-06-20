@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router";
+import { Routes, Route, useLocation } from "react-router";
+import { useEffect } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import Layout from "@/components/Layout/Layout";
 import ProtectedRoutes from "@/components/ProtectedRoutes/ProtectedRoutes";
@@ -13,9 +14,20 @@ import Login from "@/pages/Login/Login";
 import Register from "@/pages/Register/Register";
 import NotFound from "@/pages/NotFound/NotFound";
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <AuthProvider>
+      <ScrollToTop />
       <Routes>
         {/* Auth routes - no layout */}
         <Route path="/login" element={<Login />} />

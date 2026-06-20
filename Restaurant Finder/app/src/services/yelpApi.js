@@ -119,8 +119,103 @@ export async function getBusinessDetails(id) {
   }
 
   const json = await response.json();
+  // Try to also fetch reviews (Yelp has a separate reviews endpoint)
+  try {
+    const reviews = await fetchBusinessReviews(id);
+    if (reviews) json.reviews = reviews;
+  } catch (e) {
+    // ignore review fetch errors
+  }
+  // Try to also fetch menus (some Yelp endpoints expose menus)
+  try {
+    const menus = await fetchBusinessMenus(id);
+    if (menus) {
+      json.menus = menus;
+      // also set `menu` for backward compatibility if menus is an array
+      json.menu = Array.isArray(menus) ? menus : [menus];
+    }
+  } catch (e) {
+    // ignore menu fetch errors
+  }
+
   console.log("Yelp business response", json);
   return json;
+}
+
+// Fetch business reviews and merge them into the business detail object when possible
+async function fetchBusinessReviews(id) {
+  const url = `${PROXY_BASE}/api/business/${encodeURIComponent(id)}/reviews`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.reviews || data || null;
+  } catch (err) {
+    if (EXTERNAL_PROXY_BASE && YELP_API_KEY) {
+      try {
+        const directUrl = `${YELP_BASE}/businesses/${encodeURIComponent(id)}/reviews`;
+        const proxyUrl = `${EXTERNAL_PROXY_BASE}${encodeURIComponent(directUrl)}`;
+        const resp2 = await fetch(proxyUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${YELP_API_KEY}`,
+            Accept: "application/json",
+          },
+        });
+        if (!resp2.ok) return null;
+        const data2 = await resp2.json();
+        return data2.reviews || data2 || null;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+// Fetch business menus (Yelp may expose menus on a separate endpoint)
+async function fetchBusinessMenus(id) {
+  const url = `${PROXY_BASE}/api/business/${encodeURIComponent(id)}/menus`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.menus || data || null;
+  } catch (err) {
+    if (EXTERNAL_PROXY_BASE && YELP_API_KEY) {
+      try {
+        const directUrl = `${YELP_BASE}/businesses/${encodeURIComponent(id)}/menus`;
+        const proxyUrl = `${EXTERNAL_PROXY_BASE}${encodeURIComponent(directUrl)}`;
+        const resp2 = await fetch(proxyUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${YELP_API_KEY}`,
+            Accept: "application/json",
+          },
+        });
+        if (!resp2.ok) return null;
+        const data2 = await resp2.json();
+        return data2.menus || data2 || null;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+/**
+ * Return full hours array formatted as human readable strings
+ */
+function formatHoursFull(hoursData) {
+  if (!hoursData || !hoursData.open) return [];
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  return hoursData.open.map((slot) => {
+    const day = days[slot.day] || "?";
+    const start = `${slot.start.slice(0, 2)}:${slot.start.slice(2)}`;
+    const end = `${slot.end.slice(0, 2)}:${slot.end.slice(2)}`;
+    return `${day}: ${start} - ${end}`;
+  });
 }
 
 /**
@@ -141,9 +236,6 @@ export function mapYelpToRestaurant(business) {
     .map((t) => transactionMap[t])
     .filter(Boolean);
 
-  // Always include dine-in
-  features.push("Dine-in");
-
   // Derive price level from $ string length
   const priceLevel = business.price?.length || 2;
   const priceRange = business.price || "$$";
@@ -163,6 +255,7 @@ export function mapYelpToRestaurant(business) {
 
   // Format hours from detail data
   const hours = formatHours(business.hours?.[0]);
+  const hoursFull = formatHoursFull(business.hours?.[0]);
 
   // Description based on category data
   const description = `${cuisineTitle} restaurant${
@@ -173,13 +266,15 @@ export function mapYelpToRestaurant(business) {
       : ""
   }. Located at ${location}. Call ${phone} for reservations.`;
 
-  // Generic menu items since Yelp API doesn't provide menus
-  const menu = [
-    "Signature Dish",
-    "Chef's Special",
-    "House Favorite",
-    "Daily Special",
-  ];
+  // Yelp Fusion business detail may include a menu array, but it is not guaranteed.
+  // Keep raw menu only when the API provides it, and preserve the original object.
+  const menu = Array.isArray(business.menus)
+    ? business.menus
+    : Array.isArray(business.menu)
+    ? business.menu
+    : business.menu
+    ? [business.menu]
+    : [];
 
   return {
     id: business.id,
@@ -197,8 +292,18 @@ export function mapYelpToRestaurant(business) {
     hours,
     features,
     menu,
-    // Keep raw reference
-    _yelpUrl: business.url || "",
+    // Keep raw reference and expose more Yelp fields so UI can use everything
+    photos: business.photos || [],
+    categories: business.categories || [],
+    coordinates: business.coordinates || null,
+    isClosed: business.is_closed || false,
+    transactions: business.transactions || [],
+    yelpPrice: business.price || priceRange,
+    yelpUrl: business.url || "",
+    websiteMenuUrl: business.attributes?.menu_url || business.url || "",
+    hoursFull,
+    reviewsList: business.reviews || [],
+    _raw: business,
   };
 }
 
@@ -209,6 +314,7 @@ function mapCuisineAlias(alias) {
   const map = {
     italian: "italian",
     pizza: "italian",
+    trattoria: "italian",
     japanese: "japanese",
     sushi: "japanese",
     ramen: "japanese",
@@ -218,6 +324,10 @@ function mapCuisineAlias(alias) {
     bistros: "french",
     chinese: "chinese",
     dimsum: "chinese",
+    szechuan: "chinese",
+    shanghainese: "chinese",
+    cantonese: "chinese",
+    hotpot: "chinese",
     indian: "indian",
     seafood: "seafood",
     tradamerican: "american",
@@ -239,7 +349,7 @@ function mapCuisineAlias(alias) {
     vegan: "vegetarian",
     gluten_free: "vegetarian",
   };
-  return map[alias] || "all";
+  return map[alias] || alias || "all";
 }
 
 /**

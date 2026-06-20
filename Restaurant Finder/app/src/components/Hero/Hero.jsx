@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Search, MapPin, UtensilsCrossed } from "lucide-react";
 import { fetchRestaurantSuggestions } from "@/data/restaurants";
@@ -7,6 +7,7 @@ export default function Hero() {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchInputRef = useRef(null);
   const navigate = useNavigate();
 
   const handleSearch = (e) => {
@@ -40,18 +41,22 @@ export default function Hero() {
     return () => clearTimeout(timeout);
   }, [searchQuery]);
 
+
   return (
-    <section className="relative h-[500px] flex items-center justify-center overflow-visible">
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(/images/hero-bg.jpg)" }}
-      />
+    <section className="relative overflow-visible min-h-screen flex flex-col items-center justify-center">
+      {/* Full image background */}
+      <div className="absolute inset-0 w-full h-full">
+        <img
+          src="/images/hero-bg.jpg"
+          alt="Hero background"
+          className="w-full h-full object-cover object-center"
+        />
+      </div>
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-3xl mx-auto px-4 text-center">
+      <div className="relative z-10 w-full max-w-3xl mx-auto px-4 text-center mt-12">
         <div className="flex items-center justify-center gap-2 mb-4">
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
             <UtensilsCrossed className="w-5 h-5 text-white" />
@@ -72,6 +77,7 @@ export default function Hero() {
               <MapPin className="w-5 h-5" />
             </div>
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -89,13 +95,13 @@ export default function Hero() {
             </button>
           </div>
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute left-0 right-0 mt-2 rounded-2xl bg-white border border-gray-200 shadow-xl overflow-y-auto max-h-80 z-50">
+            <div className="absolute left-0 right-0 mt-2 rounded-2xl bg-white border border-gray-200 shadow-xl overflow-y-auto max-h-80 z-[9999]">
               {suggestions.map((suggestion) => (
                 <button
                   key={suggestion.id}
                   type="button"
                   onMouseDown={() => handleSuggestionClick(suggestion)}
-                  className="w-full text-left px-4 py-3 hover:bg-orange-50 transition-colors"
+                  className="w-full text-left px-4 py-3 hover:bg-orange-50 transition-colors border-b border-gray-100 last:border-b-0"
                 >
                   <div className="text-sm font-medium text-gray-900">
                     {suggestion.name}

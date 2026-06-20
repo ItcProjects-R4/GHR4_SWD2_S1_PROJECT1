@@ -1,13 +1,25 @@
-import { Link } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { Star, MapPin, Heart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function RestaurantCard({ restaurant, isSaved, onToggleSave }) {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSave = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isAuthenticated) {
+      navigate('/register', {
+        state: {
+          message: 'Please register or sign in to save restaurants to your favorites.',
+          from: location.pathname,
+        },
+      });
+      return;
+    }
+
     if (onToggleSave) {
       onToggleSave(restaurant.id);
     }
@@ -16,7 +28,7 @@ export default function RestaurantCard({ restaurant, isSaved, onToggleSave }) {
   return (
     <Link
       to={`/restaurant/${restaurant.id}`}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300"
+      className="group bg-white rounded-[1.75rem] overflow-hidden border border-gray-200 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
     >
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
@@ -25,20 +37,21 @@ export default function RestaurantCard({ restaurant, isSaved, onToggleSave }) {
           alt={restaurant.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
         <div className="absolute top-3 right-3">
           <button
             onClick={handleSave}
             className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
               isSaved
                 ? 'bg-red-500 text-white'
-                : 'bg-white/80 text-gray-600 hover:bg-white hover:text-red-500'
+                : 'bg-white/90 text-slate-700 hover:bg-white'
             }`}
           >
-            <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+            <Heart className="w-4 h-4" />
           </button>
         </div>
         <div className="absolute top-3 left-3">
-          <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-xs font-medium text-gray-700">
+          <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-xs font-semibold text-slate-700">
             {restaurant.cuisineName}
           </span>
         </div>
@@ -54,7 +67,11 @@ export default function RestaurantCard({ restaurant, isSaved, onToggleSave }) {
             {restaurant.priceRange}
           </span>
         </div>
-
+        {restaurant.categories && restaurant.categories.length > 0 && (
+          <div className="text-xs text-gray-500 mb-2">
+            {restaurant.categories.map((c) => c.title).join(", ")}
+          </div>
+        )}
         <div className="flex items-center gap-1 mb-2">
           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
           <span className="text-sm font-medium text-gray-800">
@@ -71,11 +88,11 @@ export default function RestaurantCard({ restaurant, isSaved, onToggleSave }) {
         </div>
 
         {/* Features */}
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div className="flex flex-wrap gap-2 mt-3">
           {restaurant.features.slice(0, 3).map((feature) => (
             <span
               key={feature}
-              className="px-2 py-0.5 bg-gray-50 text-gray-500 text-xs rounded-md"
+              className="px-2 py-1 bg-slate-100 text-slate-600 text-[11px] rounded-full"
             >
               {feature}
             </span>
