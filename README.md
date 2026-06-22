@@ -62,47 +62,55 @@ Admin Dashboard
 ![Admin Dashboard](docs/admin.png.jpeg)
 
 ---
-🛠 Technology Stack
--Frontend
--React 19
--Vite
-Tailwind CSS
-React Router v7
-React Hook Form
-Zod
-Radix UI
-Lucide React
-Backend
-Node.js
-Express.js
-CORS
-Dotenv
-External Services
-Yelp Fusion API
-Storage
-Browser LocalStorage
+## 🛠 Technology Stack
+
+### Frontend
+- React 19
+- Vite
+- Tailwind CSS
+- React Router v7
+- React Hook Form
+- Zod
+- Radix UI
+- Lucide React
+
+### Backend
+- Node.js
+- Express.js
+- CORS
+- Dotenv
+
+### External Services
+- Yelp Fusion API
+
+### Storage
+- Browser LocalStorage
 
 ---
-📊 Project Statistics
-Metric	Count
-Pages	8
-Components	20+
-UI Components	50+
-API Endpoints	8
-Architecture Layers	3
-Supported Devices	Mobile, Tablet, Desktop
+## 📊 Project Statistics
+
+| Metric | Count |
+|------|------|
+| Pages | 8 |
+| Components | 20+ |
+| UI Components | 50+ |
+| API Endpoints | 8 |
+| Architecture Layers | 3 |
+| Supported Devices | Mobile, Tablet, Desktop |
 
 ---
-🎥 Project Demo
+## 🎥 Project Demo
 
 https://drive.google.com/file/d/1DA0ZYz1VIjd1vn0PAGi09J6fxasrujPV/view
 
 ---
-👥 Team Members
-| Name |
-| Ahmed Yehia	| Frontend Developer
-| Shahd Elhewey	| Team Member
-| Mohamed Mostafa	| Team Member
+## 👥 Team Members
+
+| Name | Role |
+|------|------|
+| Ahmed Yehia | Frontend Developer |
+| Shahd Elhewey | Team Member |
+| Mohamed Mostafa | Team Member |
 
 ---
 <div align="center">
