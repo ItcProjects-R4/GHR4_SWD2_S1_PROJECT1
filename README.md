@@ -1,78 +1,18 @@
+<div align="center">
+
 # 🍽️ Restaurant Finder
 
-Restaurant Finder is a React + Vite web application that allows users to search for restaurants, view details, and explore information in a clean and responsive interface.
+### AI-Powered Restaurant Discovery & Management Platform
 
-The project focuses on frontend development using modern React practices with fast performance powered by Vite.
+Find restaurants based on your mood, budget, dietary restrictions, and health conditions.
 
----
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![Vite](https://img.shields.io/badge/Vite-Latest-purple?logo=vite)
+![Node.js](https://img.shields.io/badge/Node.js-Backend-green?logo=node.js)
+![Express](https://img.shields.io/badge/Express.js-API-black?logo=express)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-Styling-38B2AC?logo=tailwind-css)
+![Yelp API](https://img.shields.io/badge/Yelp-Fusion_API-red?logo=yelp)
 
-Website video tutorial: https://drive.google.com/file/d/1DA0ZYz1VIjd1vn0PAGi09J6fxasrujPV/view?usp=sharing
+[🎥 Demo](#-project-demo) • [🚀 Features](#-key-features) • [🏗 Architecture](#️-system-architecture) • [⚙ Installation](#️-installation)
 
-## 🚀 Features
-
-- Search for restaurants by location or keyword  
-- View restaurant details (ratings, address, phone, category)  
-- Responsive and user-friendly UI  
-- Fast loading with Vite  
-- Component-based architecture using React  
-- Clean and modern design
-
----
-
-## 🛠️ Tech Stack
-
-- React 19  
-- Vite  
-- JavaScript (ES6+)  
-- Tailwind CSS (if used)  
-- React Router DOM  
-
----
-
-## 📦 Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/ItcProjects-R4/GHR4_SWD2_S1_PROJECT1.git
-
-Navigate to project folder:
-
-cd "Restaurant Finder"
-
-Install dependencies:
-
-npm install
-▶️ Run the Project
-
-Start development server:
-
-npm run dev
-
-Then open the app in your browser:
-
-http://localhost:5173
-📁 Project Structure
-Restaurant Finder/
-├── public/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   ├── assets/
-│   └── App.jsx
-├── index.html
-├── package.json
-└── vite.config.js
-⚙️ Build for Production
-
-Create optimized build:
-
-npm run build
-
-Preview production build:
-
-npm run preview
-👤 Notes
-This project is frontend-only (no backend required)
-Data handling depends on the API or static data used
-Designed for learning React fundamentals and routing
+</div>
