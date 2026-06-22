@@ -34,14 +34,16 @@ D --> E[Dietary Restrictions]
 E --> F[Medical Conditions]
 F --> G[Party Size]
 G --> H[Generate Recommendations]
+```
 
+```mermaid
 flowchart LR
 User --> React
 React --> Express
 Express --> YelpAPI
 React --> LocalStorage
 
-
+```
 ---
 📷 Screenshots Gallery
 Home Page
