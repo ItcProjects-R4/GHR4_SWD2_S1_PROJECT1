@@ -45,20 +45,20 @@ React --> LocalStorage
 
 ```
 ---
-📷 Screenshots Gallery
-Home Page
+## 📷 Screenshots Gallery
+- Home Page
 ![Home Page](docs/home.png.jpeg)
 
-Explore Restaurants
+- Explore Restaurants
 ![Explore Restaurants](docs/explore.png.jpeg)
 
-Smart Assistant
+- Smart Assistant
 ![Smart Assistant](docs/assistant.png.jpeg)
 
-Restaurant Details
+- Restaurant Details
 ![Restaurant Details](docs/details.png.jpeg)
 
-Admin Dashboard
+- Admin Dashboard
 ![Admin Dashboard](docs/admin.png.jpeg)
 
 ---
