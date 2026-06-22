@@ -19,7 +19,8 @@ Find restaurants based on your mood, budget, dietary restrictions, and health co
 
 ## 📸 Application Preview
 
-<img width="1886" height="874" alt="Screenshot_22-6-2026_165156_localhost" src="https://github.com/user-attachments/assets/b6972a5f-3a7b-4eb5-9750-5e520b756a69" />
+![Home Page](docs/screenshots/home.png.jpeg)
+
 
 ## 🤖 Smart Assistant Workflow
 
