@@ -111,4 +111,4 @@ https://drive.google.com/file/d/1DA0ZYz1VIjd1vn0PAGi09J6fxasrujPV/view
 Restaurant Finder © 2026
 Built with ❤️ using React, Node.js and Yelp Fusion API
 
-</div> ```
+</div> 
