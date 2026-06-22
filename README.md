@@ -72,7 +72,7 @@ LocalStorage[(Local Storage)]
 
 ### Home Page
 
-<img width="1886" height="874" alt="Screenshot_22-6-2026_165156_localhost" src="https://github.com/user-attachments/assets/3fb5dfe0-7597-453f-8dac-23a546a7c5f8" />
+<img width="1886" height="874" alt="Screenshot_22-6-2026_165156_localhost" src="https://github.com/user-attachments/assets/b6972a5f-3a7b-4eb5-9750-5e520b756a69" />
 
 ### Explore Restaurants
 
