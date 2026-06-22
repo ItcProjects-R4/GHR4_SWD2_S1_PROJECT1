@@ -40,13 +40,14 @@ User --> React
 React --> Express
 Express --> YelpAPI
 React --> LocalStorage
-```
+
 
 ---
 📷 Screenshots Gallery
 Home Page
 ![Home Page](docs/home.png.jpeg)
 
+Explore Restaurants
 ![Explore Restaurants](docs/explore.png.jpeg)
 
 Smart Assistant
