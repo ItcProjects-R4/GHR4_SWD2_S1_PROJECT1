@@ -63,9 +63,9 @@ Admin Dashboard
 
 ---
 🛠 Technology Stack
-Frontend
-React 19
-Vite
+-Frontend
+-React 19
+-Vite
 Tailwind CSS
 React Router v7
 React Hook Form
