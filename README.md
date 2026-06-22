@@ -63,6 +63,7 @@ React --> LocalStorage
 YelpAPI[(Yelp API)]
 LocalStorage[(Local Storage)]
 
+
 ---
 
 ## Screenshots Gallery
@@ -72,22 +73,23 @@ LocalStorage[(Local Storage)]
 
 ### Home Page
 
-<img width="1886" height="874" alt="Screenshot_22-6-2026_165156_localhost" src="https://github.com/user-attachments/assets/b6972a5f-3a7b-4eb5-9750-5e520b756a69" />
+![Home](docs/home.png.jpeg)
 
 ### Explore Restaurants
 
-<img width="1095" height="833" alt="Screenshot_22-6-2026_165751_localhost" src="https://github.com/user-attachments/assets/2c6e30cc-3cd4-4790-96c0-006341452204" />
+![Explore](docs/explore.png.jpeg)
+
 ### Smart Assistant
 
-<img width="918" height="753" alt="Screenshot_22-6-2026_1706_localhost" src="https://github.com/user-attachments/assets/aeda638e-b29c-4e5b-a532-abf51ef49f6c" />
+![Assistant](docs/assistant.png.jpeg)
 
 ### Restaurant Details
 
-<img width="1253" height="1035" alt="Screenshot_22-6-2026_17046_localhost" src="https://github.com/user-attachments/assets/ec17e0cf-b3d0-4633-9599-9a923e617346" />
+![Details](docs/details.png.jpeg)
 
 ### Admin Dashboard
 
-<img width="1253" height="1035" alt="Screenshot_22-6-2026_17046_localhost" src="https://github.com/user-attachments/assets/55965027-3404-4e8e-99b6-c17312e730c5" />
+![Admin](docs/admin.png.jpeg)
 
 # 🛠 Technology Stack
 
